@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Interview Simulator
 
-## Getting Started
+A Next.js application that generates interview questions using Google's Gemini AI.
 
-First, run the development server:
+## Features
 
+- User authentication (signup/login)
+- AI-powered interview question generation
+- MongoDB database integration
+- Modern React frontend with Tailwind CSS
+
+## Setup Instructions
+
+### 1. Install Dependencies
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Environment Variables
+Create a `.env.local` file in the root directory with the following variables:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+MONGODB_URI=mongodb://localhost:27017/interview_simulator
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+GOOGLE_API_KEY=your-google-api-key-here
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Database Setup
+Make sure MongoDB is running locally or use MongoDB Atlas:
+- For local MongoDB: Install and start MongoDB service
+- For MongoDB Atlas: Use the connection string from your Atlas cluster
 
-## Learn More
+### 4. Google API Key
+Get a Google API key from [Google AI Studio](https://makersuite.google.com/app/apikey) and add it to your environment variables.
 
-To learn more about Next.js, take a look at the following resources:
+### 5. Run the Application
+```bash
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The application will be available at `http://localhost:3000`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Testing
 
-## Deploy on Vercel
+Visit `http://localhost:3000/test` to test the API endpoints:
+- Basic API functionality
+- Database connection
+- Question generation (without authentication)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Troubleshooting
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Common Issues:
+
+1. **Database Connection Error**
+   - Ensure MongoDB is running
+   - Check your MONGODB_URI in .env.local
+   - For local MongoDB: `mongod` command should be running
+
+2. **Google API Error**
+   - Verify your GOOGLE_API_KEY is correct
+   - Check if the API key has access to Gemini Pro model
+   - Ensure you have sufficient quota
+
+3. **Authentication Issues**
+   - Check JWT_SECRET in environment variables
+   - Clear browser localStorage if token issues persist
+
+4. **Question Generation Fails**
+   - Check browser console for detailed error messages
+   - Verify API key permissions
+   - Test with the `/test` page first
+
+## API Endpoints
+
+- `POST /api/auth` - User authentication (login/signup)
+- `POST /api/interview/question` - Generate interview questions
+- `GET /api/interview` - Get interview sessions
+- `GET /api/test` - Test API functionality
+- `GET /api/db-test` - Test database connection
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── api/           # API routes
+│   ├── test/          # Test page
+│   └── page.tsx       # Main application
+├── lib/               # Utility functions
+└── models/            # Database models
+```
+
+## Development
+
+- The application uses Next.js 15 with App Router
+- Tailwind CSS for styling
+- MongoDB with Mongoose for database
+- JWT for authentication
+- Google Generative AI for question generation
