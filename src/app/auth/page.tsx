@@ -1,8 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function AuthPage() {
+  const router = useRouter();
+
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -38,8 +41,17 @@ export default function AuthPage() {
         setError(data.error || "Something went wrong");
       } else {
         setMessage(data.message);
-        // optionally store token in localStorage or cookie
+
+        // Save token in localStorage
         localStorage.setItem("token", data.token);
+
+        // Redirect after login
+        const sessionId = localStorage.getItem("sessionId");
+        if (sessionId) {
+          router.push(`/interview?sessionId=${sessionId}`);
+        } else {
+          router.push("/");
+        }
       }
     } catch (err) {
       setError("Network error");
@@ -111,7 +123,13 @@ export default function AuthPage() {
             setMessage(null);
             setError(null);
           }}
-          style={{ cursor: "pointer", color: "blue", background: "none", border: "none", padding: 0 }}
+          style={{
+            cursor: "pointer",
+            color: "blue",
+            background: "none",
+            border: "none",
+            padding: 0,
+          }}
         >
           {mode === "login" ? "Sign Up" : "Login"}
         </button>
