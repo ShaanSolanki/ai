@@ -4,6 +4,7 @@ import InterviewSession from "@/models/interviewsession";
 import User from "@/models/user";
 import mongoose from "mongoose";
 
+// DON'T expose your API key in public code! For demo only:
 const GEMINI_API_KEY = "AIzaSyBEX6AXREH3YoelhWEA2oB4dKycuM_ykIs";
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
 
@@ -11,7 +12,14 @@ interface Question {
   questionText: string;
   answerText?: string;
   feedback?: string;
+  difficulty?: string;
 }
+
+const DIFFICULTY_LABELS: { [key: string]: string } = {
+  easy: "entry-level (easy)",
+  intermediate: "mid-level (intermediate)",
+  advanced: "senior-level (advanced)",
+};
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,6 +28,8 @@ export async function POST(req: NextRequest) {
     const reqBody = await req.json();
     const topic: string = reqBody.topic;
     let numberOfQuestions: number = reqBody.numberOfQuestions ?? 5;
+    const difficulty: string = reqBody.difficulty?.toLowerCase() ?? "intermediate";
+    const difficultyLabel = DIFFICULTY_LABELS[difficulty] ?? "mid-level (intermediate)";
 
     if (!topic) {
       return NextResponse.json({ message: "Topic is required" }, { status: 400 });
@@ -31,7 +41,6 @@ export async function POST(req: NextRequest) {
     // Identify user dynamically based on email
     const email: string | undefined = reqBody.email;
     const name: string | undefined = reqBody.name ?? "AutoCreatedUser";
-
     let user;
 
     if (email) {
@@ -53,10 +62,9 @@ export async function POST(req: NextRequest) {
     }
 
     const userId = user._id;
-
     const questions: Question[] = [];
 
-    const basePrompt = `Generate a concise, clear, professional interview question on the topic "${topic}". Limit your question to 20 words maximum, as a real technical interviewer would ask.`;
+    const basePrompt = `Generate a concise, clear, professional interview question on the topic "${topic}" at the ${difficultyLabel} of difficulty. The question must reflect real technical interview questions used by industry professionals. Limit to 20 words maximum.`;
 
     for (let i = 0; i < numberOfQuestions; i++) {
       const fetchRes = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
@@ -106,7 +114,7 @@ export async function POST(req: NextRequest) {
 
       questions.push({
         questionText: text.trim(),
-        // You can skip answerText and feedback here, they will default to undefined
+        difficulty,        // add difficulty for traceability
         // answerText: "",
         // feedback: "",
       });
@@ -133,11 +141,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Failed to create session" }, { status: 500 });
     }
 
-    // Return the full first question object, including _id, questionText, etc.
+    // Return the full first question object, including _id, questionText, difficulty, etc.
     return NextResponse.json(
       {
         sessionId: savedSession._id,
-        question: savedSession.questions[0], // full object with _id included
+        question: savedSession.questions[0],
         totalQuestions: savedSession.questions.length,
       },
       { status: 200 }
