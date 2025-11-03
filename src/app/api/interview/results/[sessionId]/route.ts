@@ -7,9 +7,12 @@ const JWT_SECRET = process.env.JWT_SECRET || "secret";
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { sessionId: string } }
+    { params }: { params: Promise<{ sessionId: string }> }
 ) {
     try {
+        // Await params before using
+        const { sessionId } = await params;
+
         // Check authentication
         const authHeader = request.headers.get("authorization");
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -27,7 +30,7 @@ export async function GET(
         await connectDB();
 
         const session = await InterviewSession.findOne({
-            _id: params.sessionId,
+            _id: sessionId,
             userId: decoded.userId
         });
 

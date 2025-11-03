@@ -19,21 +19,28 @@ interface AnswerRequestBody {
 async function generateQuestionFeedback(question: any, topic: string) {
   try {
     const feedbackPrompt = `
-Evaluate this interview answer for a ${topic} position:
+As an expert interviewer, evaluate this candidate's answer for a ${topic} position:
 
 Question: ${question.questionText}
-Answer: ${question.answerText}
+Candidate's Answer: ${question.answerText}
 
-Please provide feedback in the following JSON format:
+Provide constructive, personalized feedback in JSON format:
 {
   "score": [0-100],
-  "strengths": ["strength1", "strength2"],
-  "improvements": ["improvement1", "improvement2"],
-  "explanation": "detailed explanation of the answer quality",
+  "strengths": ["specific strength 1", "specific strength 2"],
+  "improvements": ["actionable improvement 1", "actionable improvement 2"],
+  "explanation": "detailed, encouraging explanation focusing on content quality and depth",
   "correct": true/false
 }
 
-Focus on technical accuracy, clarity, completeness, and relevance to the question.
+Evaluation criteria:
+- Technical accuracy and depth of knowledge
+- Clarity of communication and structure
+- Practical relevance and real-world application
+- Completeness of the response
+- Professional insight and experience demonstrated
+
+Be encouraging while providing specific, actionable feedback. Focus on the content and approach rather than mentioning any difficulty levels.
 `;
 
     const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
@@ -98,27 +105,33 @@ async function generateSessionFeedback(session: any) {
     const answeredQuestions = questions.filter((q: any) => q.answerText?.trim()).length;
     const averageScore = questions.reduce((sum: number, q: any) => sum + (q.feedback?.accuracy || 0), 0) / totalQuestions;
 
+    // Collect strengths and improvements from individual questions
+    const allStrengths = questions.flatMap((q: any) => q.feedback?.strengths || []);
+    const allImprovements = questions.flatMap((q: any) => q.feedback?.improvements || []);
+
     const feedbackPrompt = `
-Generate an overall interview performance summary:
+Create a personalized interview performance summary for a ${session.topic || 'General'} interview:
 
-Topic: ${session.topic || 'General'}
-Difficulty: ${session.difficulty || 'Intermediate'}
-Total Questions: ${totalQuestions}
-Answered Questions: ${answeredQuestions}
-Average Score: ${averageScore.toFixed(1)}%
+Session Overview:
+- Total Questions: ${totalQuestions}
+- Completion Rate: ${Math.round((answeredQuestions / totalQuestions) * 100)}%
+- Average Performance: ${averageScore.toFixed(1)}%
 
-Individual Question Performance:
-${questions.map((q: any, i: number) => `
-Q${i + 1}: ${q.questionText.substring(0, 100)}...
-Answer Quality: ${q.feedback?.accuracy || 0}%
-`).join('')}
+Key Strengths Observed:
+${allStrengths.slice(0, 5).map(s => `- ${s}`).join('\n')}
 
-Provide a comprehensive performance summary including:
-1. Overall performance rating
-2. Key strengths demonstrated
-3. Areas for improvement
-4. Specific recommendations
-5. Interview readiness assessment
+Areas for Growth:
+${allImprovements.slice(0, 5).map(i => `- ${i}`).join('\n')}
+
+Generate a comprehensive, encouraging performance summary that includes:
+
+1. **Overall Assessment**: Professional evaluation of interview readiness
+2. **Key Strengths**: Specific skills and knowledge areas demonstrated well
+3. **Growth Opportunities**: Constructive areas for improvement with actionable advice
+4. **Personalized Recommendations**: Specific next steps for continued development
+5. **Interview Readiness**: Assessment of preparedness for real interviews
+
+Write in an encouraging, professional tone that motivates continued learning. Focus on specific, actionable insights rather than generic advice. Avoid mentioning difficulty levels or scores directly.
 `;
 
     const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
