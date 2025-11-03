@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 const questionSchema = new mongoose.Schema(
   {
     questionText: { type: String, required: true },
+    difficulty: { type: String },
+    type: { type: String },
     answerText: { type: String }, // Store user's answer to this question
     feedback: {
       text: { type: String },        // Full feedback result (raw JSON from Gemini)
@@ -10,6 +12,8 @@ const questionSchema = new mongoose.Schema(
       correct: { type: Boolean },    // Correct/wrong
       accuracy: { type: Number },    // Percentage
       explanation: { type: String }, // Details/suggestions
+      strengths: [{ type: String }], // Array of strengths
+      improvements: [{ type: String }], // Array of improvements
     },
   },
   { timestamps: true }
@@ -30,6 +34,11 @@ const questionSchema = new mongoose.Schema(
 const interviewSessionSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    topic: { type: String },
+    difficulty: { type: String },
+    questionType: { type: String },
+    totalQuestions: { type: Number },
+    completed: { type: Boolean, default: false },
     questions: [questionSchema],
     currentQuestionIndex: { type: Number, default: 0 },
     // answers: { type: [answerSchema], default: [] },

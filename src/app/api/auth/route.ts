@@ -26,7 +26,11 @@ export async function POST(req: NextRequest) {
       const newUser = new User({ name, email, password: hashedPassword });
       await newUser.save();
 
-      const token = jwt.sign({ id: newUser._id }, JWT_SECRET, { expiresIn: "7d" });
+      const token = jwt.sign({
+        userId: newUser._id,
+        name: newUser.name,
+        email: newUser.email
+      }, JWT_SECRET, { expiresIn: "7d" });
       return NextResponse.json(
         {
           message: "Signup successful",
@@ -53,7 +57,11 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Invalid password" }, { status: 401 });
       }
 
-      const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "7d" });
+      const token = jwt.sign({
+        userId: user._id,
+        name: user.name,
+        email: user.email
+      }, JWT_SECRET, { expiresIn: "7d" });
       return NextResponse.json(
         {
           message: "Login successful",
